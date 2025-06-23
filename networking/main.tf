@@ -21,7 +21,6 @@ This Terraform configuration creates a basic VPC setup in AWS (Mumbai region - a
 variable "vpc_name" {}
 variable "vpc_cidr" {}
 variable "public_subnet_cidr" {}
-#variable "private_subnet_cidr" {}
 variable "availability_zone" {}
 
 #==============================
@@ -45,18 +44,7 @@ resource "aws_subnet" "public-subnet" {
     "Name" = "terraform-jenkins-public-subnet-${count.index + 1}"
   }
 }
-/*
-# Create private subnets similarly using variables
-resource "aws_subnet" "private-subnet" {
-  count = length(var.private_subnet_cidr)
-  vpc_id = aws_vpc.vpc.id
-  cidr_block = element(var.private_subnet_cidr, count.index)
-  availability_zone = element(var.availability_zone, count.index)
-  tags = {
-    "Name" = "terraform-jenkins-private-subnet-${count.index + 1}"
-  }
-}
-*/
+
 # Create an Internet Gateway and attach it to the VPC
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.vpc.id
@@ -76,14 +64,7 @@ resource "aws_route_table" "public_route_table" {
     "Name" = "terraform-jenkins-public-rt"
   }
 }
-/*
-# Create a private route table (no internet route included here)
-resource "aws_route_table" "private_route_table" {
-  vpc_id = aws_vpc.vpc.id
-  tags = {
-    "Name" = "terraform-jenkins-private-rt"
-  }
-}*/
+
 
 # Associate each public subnet with the public route table
 resource "aws_route_table_association" "public_rt_association" {
@@ -91,14 +72,7 @@ resource "aws_route_table_association" "public_rt_association" {
   subnet_id = aws_subnet.public-subnet[count.index].id
   route_table_id = aws_route_table.public_route_table.id
 }
-/*
-# Associate each private subnet with the private route table
-resource "aws_route_table_association" "private_rt_association" {
-  count = length(var.private_subnet_cidr)
-  subnet_id = aws_subnet.private-subnet[count.index].id
-  route_table_id = aws_route_table.private_route_table.id
-}
-*/
+
 
 #==============================
 # Output: 
